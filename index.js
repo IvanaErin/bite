@@ -5,14 +5,23 @@ import cors from "cors";
 const app = express();
 app.use(express.json());
 
-// IMPORTANT: Allow ByetHost to connect
 app.use(cors({
-    origin: "*",   // allow all (simple)
-    methods: ["POST"]
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"]
 }));
 
 const OPENAI_KEY = process.env.OPENAI_KEY;
 
+// Test routes
+app.get("/", (req, res) => {
+    res.send("Server is running.");
+});
+
+app.get("/ai", (req, res) => {
+    res.send("AI proxy ready. Use POST /ai.");
+});
+
+// AI endpoint
 app.post("/ai", async (req, res) => {
     try {
         const response = await fetch("https://api.openai.com/v1/responses", {
