@@ -1,48 +1,39 @@
 import express from "express";
-import fetch from "node-fetch";
 import cors from "cors";
+import OpenAI from "openai";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"]
-}));
-
-const OPENAI_KEY = process.env.OPENAI_KEY;
-
-// Test routes
-app.get("/", (req, res) => {
-    res.send("Server is running.");
-});
-
-app.get("/ai", (req, res) => {
-    res.send("AI proxy ready. Use POST /ai.");
+// Load your API key from Render environment variables
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_KEY
 });
 
 // AI endpoint
 app.post("/ai", async (req, res) => {
-    try {
-        const response = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${OPENAI_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                input: req.body.message
-            })
-        });
+  try {
+    const userMessage = req.body.message;
 
-        const data = await response.json();
-        res.json({ reply: data.output_text || "No response" });
+    const response = await client.responses.create({
+      model: "gpt-4o-mini",
+      input: userMessage
+    });
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ reply: "Error contacting AI server." });
-    }
+    res.json({
+      reply: response.output_text
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ reply: "Error contacting AI server." });
+  }
+});
+
+// Default homepage
+app.get("/", (req, res) => {
+  res.send("AI Proxy is running!");
 });
 
 app.listen(3000, () => console.log("Proxy running on port 3000"));
