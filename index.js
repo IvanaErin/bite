@@ -1,8 +1,15 @@
 import express from "express";
 import fetch from "node-fetch";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+
+// IMPORTANT: Allow ByetHost to connect
+app.use(cors({
+    origin: "*",   // allow all (simple)
+    methods: ["POST"]
+}));
 
 const OPENAI_KEY = process.env.OPENAI_KEY;
 
@@ -24,6 +31,7 @@ app.post("/ai", async (req, res) => {
         res.json({ reply: data.output_text || "No response" });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({ reply: "Error contacting AI server." });
     }
 });
