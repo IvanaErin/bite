@@ -6,12 +6,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Load your API key from Render environment variables
+// OpenAI client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_KEY
 });
 
-// AI endpoint
+// POST /ai endpoint
 app.post("/ai", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -21,19 +21,18 @@ app.post("/ai", async (req, res) => {
       input: userMessage
     });
 
-    res.json({
-      reply: response.output_text
-    });
-
+    res.json({ reply: response.output_text });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ reply: "Error contacting AI server." });
+    res.status(500).json({ reply: "AI Server Error" });
   }
 });
 
-// Default homepage
+// test route
 app.get("/", (req, res) => {
   res.send("AI Proxy is running!");
 });
 
-app.listen(3000, () => console.log("Proxy running on port 3000"));
+// Render must use process.env.PORT
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port " + PORT));
